@@ -9,7 +9,11 @@
     "parserOptions": {
         "project": "./tsconfig.json",
         "ecmaVersion": "latest",
-        "sourceType": "module"
+        "sourceType": "module",
+        "ignorePatterns": [
+            "dist",
+            "node_modules"
+        ]
     },
     "rules": {
     }

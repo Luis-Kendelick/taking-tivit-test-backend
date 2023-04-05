@@ -15,6 +15,7 @@
     "typescript": "^5.0.3"
   },
   "scripts": {
+    "build": "tsc",
     "dev": "ts-node-dev --respawn --transpileOnly --ignore-watch node_modules --no-notify src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
