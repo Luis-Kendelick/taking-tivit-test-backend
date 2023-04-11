@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import express from 'express'
 import dotenv from 'dotenv'
-import userRouter from './routes/authRoutes'
+import userRouter from './src/routes/authRoutes'
 import cors from 'cors'
 
 dotenv.config()
