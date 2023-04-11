@@ -16,7 +16,6 @@ const app = express()
 app.use(express.json())
 
 mongoose.connect(process.env.MONGO_DB_USER_DB ?? '').then(() => {
-//   app.listen(process.env.PORT ?? 3000)
   console.log('Connected to db')
 }).catch((err) => {
   console.log('Error connecting to database', err)
@@ -29,7 +28,7 @@ const verifyToken: RequestHandler = async (req: Request, res: Response, next: Ne
   const token = authHeader?.split(' ')[1]
 
   if (!token) {
-    return res.status(401).send('Acesso negado!')
+    return res.status(401).json({ message: 'Acesso negado!' })
   }
 
   try {
@@ -42,7 +41,7 @@ const verifyToken: RequestHandler = async (req: Request, res: Response, next: Ne
   }
 }
 
-// Rota publica
+// Rota pública
 
 userRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
   const id = req.params.id
@@ -59,45 +58,57 @@ userRouter.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body
 
   if (!email) {
-    return res.status(422).send('O email é obrigatório')
+    return res.status(422).json({ message: 'O email é obrigatório' })
   }
 
   if (!password) {
-    return res.status(422).send('A senha é obrigatória')
+    return res.status(422).json({ message: 'A senha é obrigatória' })
   }
 
   const user = await User.findOne({ email })
 
   if (user === null) {
-    return res.status(404).json({ msg: 'Usuário não encontrado' })
+    return res.status(404).json({ message: 'Usuário não encontrado' })
   }
 
   const passwordMatched = await bcrypt.compare(password, user.password)
 
   if (!passwordMatched) {
-    return res.status(422).send('Senha incorreta')
+    return res.status(422).json({ message: 'Senha incorreta' })
   }
 
   try {
     const secret = process.env.SECRET ?? ''
     const token = jwt.sign({ id: user._id }, secret, { expiresIn: '1d' })
-    return res.status(200).json({ msg: 'Usuário logado com sucesso', token })
+    return res.status(200).json({ message: 'Usuário logado com sucesso', token })
   } catch (error) {
-    res.status(500).send('Server error')
+    res.status(500).json({ message: 'Server error' })
   }
 })
 
 userRouter.post('/register', async (req: Request<IUserProfile>, res: Response) => {
   const { name, email, password, profilePhoto, createdAt, address }: IUserProfile = req.body
 
-  if (!name || !email || !password) {
-    return res.status(422).send('Please enter all fields')
+  //   if (!name || !email || !password) {
+  //     return res.status(422).send('Please enter all fields')
+  //   }
+
+  if (!name) {
+    return res.status(422).json({ error: 'O nome é obrigatório' })
+  }
+
+  if (!email) {
+    return res.status(422).json({ error: 'O email é obrigatório' })
+  }
+
+  if (!password) {
+    return res.status(422).json({ error: 'A senha é obrigatória' })
   }
 
   const userExists = await User.findOne({ email })
 
   if (userExists !== null) {
-    return res.status(422).send('User already exists')
+    return res.status(422).json({ error: 'User already exists' })
   }
 
   const salt = await bcrypt.genSalt(10)
@@ -105,12 +116,14 @@ userRouter.post('/register', async (req: Request<IUserProfile>, res: Response) =
 
   const user = new User({ name, email, password: hash, profilePhoto, createdAt, address })
 
-  user.save().then(() => {
-    res.status(201).send('User registered successfully')
-  }).catch((err) => {
-    console.log('🚀 ~ file: app.ts:43 ~ app.post ~ err', err)
-    res.status(500).send('Server error')
-  })
+  user.save()
+    .then(() => {
+      res.status(201).json({ message: 'User registered successfully' })
+    })
+    .catch((err) => {
+      console.log('🚀 ~ file: app.ts:43 ~ app.post ~ err', err)
+      res.status(500).json({ error: 'Server error' })
+    })
 })
 
 export default userRouter
