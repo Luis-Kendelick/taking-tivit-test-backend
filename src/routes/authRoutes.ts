@@ -80,7 +80,7 @@ userRouter.post('/login', async (req: Request, res: Response) => {
   try {
     const secret = process.env.SECRET ?? ''
     const token = jwt.sign({ id: user._id }, secret, { expiresIn: '1d' })
-    return res.status(200).json({ message: 'Usuário logado com sucesso', token })
+    return res.status(200).json({ message: 'Usuário logado com sucesso', token, user })
   } catch (error) {
     res.status(500).json({ message: 'Server error' })
   }
